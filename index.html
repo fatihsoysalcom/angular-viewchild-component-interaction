@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angular ViewChild Example</title>
+    <script src="https://unpkg.com/zone.js@^0.11.4/dist/zone.min.js"></script>
+    <script src="https://unpkg.com/@angular/core@^12.0.0/fesm2015/core.js"></script>
+    <script src="https://unpkg.com/@angular/common@^12.0.0/fesm2015/common.js"></script>
+    <script src="https://unpkg.com/@angular/platform-browser@^12.0.0/fesm2015/platform-browser.js"></script>
+    <script src="https://unpkg.com/@angular/platform-browser-dynamic@^12.0.0/fesm2015/platform-browser-dynamic.js"></script>
+    <style>
+        .highlight {
+            border: 2px solid red;
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <app-parent></app-parent>
+
+    <script>
+        // Define a simple child component
+        class ChildComponent {
+            constructor() {
+                this.message = 'Hello from Child!';
+            }
+
+            // Method to be called by parent using ViewChild
+            updateMessage(newMessage) {
+                this.message = newMessage;
+            }
+        }
+        // Decorate ChildComponent with @Component
+        ChildComponent = ng.core.Component({
+            selector: 'app-child',
+            template: `<h3>{{ message }}</h3>`
+        })(ChildComponent);
+
+        // Define the parent component that uses ViewChild
+        class ParentComponent {
+            // Use ViewChild to get a reference to the child component instance
+            // 'child' is the template reference variable in the parent's template
+            // 'static: true' means it's available in ngOnInit (for older Angular versions, often false is preferred for dynamic content)
+            constructor() {
+                this.childRef = null; // Will be populated by ViewChild
+            }
+
+            ngAfterViewInit() {
+                // Access the child component's method via the ViewChild reference
+                if (this.childRef) {
+                    this.childRef.updateMessage('Message updated by Parent!');
+                }
+            }
+
+            // Example of interacting with a DOM element using ViewChild
+            highlightChild() {
+                if (this.childRef) {
+                    // In a real scenario, you'd use ElementRef to access DOM elements directly
+                    // For simplicity here, we'll just demonstrate the concept of access
+                    console.log('Highlighting child element (simulated)');
+                }
+            }
+        }
+        // Decorate ParentComponent with @Component and @ViewChild
+        ParentComponent = ng.core.Component({
+            selector: 'app-parent',
+            template: `
+                <div>
+                    <h1>Parent Component</h1>
+                    <app-child #child></app-child> <!-- Template reference variable 'child' -->
+                    <button (click)="highlightChild()">Highlight Child (Simulated)</button>
+                </div>
+            `,
+            // Use ViewChild to query for the 'child' template reference variable
+            // The type is ChildComponent, and 'static: true' is used for simplicity in this single-file example
+            // In more complex apps, you might use { read: ElementRef } for DOM elements
+            // or { static: false } for dynamically rendered components.
+            queries: {
+                childRef: new ng.core.ViewChild(ChildComponent, { static: true })
+            }
+        })(ParentComponent);
+
+        // Define the main application module
+        class AppModule {}
+        AppModule = ng.core.NgModule({
+            declarations: [ParentComponent, ChildComponent],
+            bootstrap: [ParentComponent],
+            imports: [ng.common.CommonModule]
+        })(AppModule);
+
+        // Bootstrap the application
+        ng.platformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
+    </script>
+
+</body>
+</html>
